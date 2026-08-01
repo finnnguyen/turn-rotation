@@ -57,4 +57,7 @@ accessibility, and browser testing.
   41 manager-review drafts without automatically publishing catalog changes.
 - An account-wide AWS zero-spend budget alert provides an early cost warning.
 
-Add the final demonstration-video URL here when the recording is available.
+## Demonstration video
+
+Follow the prepared [recording script](./demo-recording.md). Add the final
+unlisted or public video URL here after uploading it.
