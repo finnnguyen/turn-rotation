@@ -1,0 +1,36 @@
+project_id = "turn-rotation"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "app", "graphql_public"]
+extra_search_path = ["public", "app", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+enable_signup = false
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[functions.process-service-menu]
+# The function verifies the caller's access token and manager-only RLS itself.
+# This also supports projects using newer asymmetric JWT signing keys.
+verify_jwt = false

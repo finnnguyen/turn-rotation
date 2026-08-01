@@ -75,6 +75,11 @@ The MVP must:
 | M7 — AWS portfolio feature | Textract-assisted, manager-reviewed service import | E13 |
 | M8 — Production readiness | PWA, responsive polish, security review, E2E tests, documentation, and launch | E14–E15 |
 
+Implementation status: M0 through M7 are complete. M8 is in progress with the
+installable PWA, responsive phone/tablet shell, privacy-safe offline summary,
+automated accessibility checks, architecture documentation, decision records,
+and deployment runbook implemented in the repository.
+
 ## 5. Database migration plan
 
 Migration filenames should use timestamps or ordered numeric prefixes. Each migration must be forward-only in production, tested against an empty database, and tested as an upgrade from the preceding migration.
@@ -931,6 +936,11 @@ Acceptance criteria:
 - Last synchronized dashboard can be displayed offline.
 - Offline mode clearly blocks conflict-prone commands.
 
+Implementation note (Milestone 8): manifest, icons, standalone display, safe
+offline fallback, global offline mutation blocking, and a last-synchronized
+aggregate dashboard are implemented. Private authenticated HTML, customer
+names, and employee names are intentionally excluded from browser storage.
+
 ### TR-143 — Accessibility review
 
 Priority: P1
@@ -1074,4 +1084,3 @@ Sprint exit:
 - Manager can create a service and a new price version.
 - Staff cannot access manager mutations.
 - CI, migration tests, and an Amplify preview deployment are working.
-

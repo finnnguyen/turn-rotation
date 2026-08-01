@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-canvas: #f5f1e8;
+  --color-ink: #182a27;
+  --color-muted: #5f6f6b;
+  --color-forest: #163c35;
+  --color-copper: #984d2f;
+  --font-sans:
+    "Avenir Next", "Segoe UI", Helvetica, Arial, ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono:
+    "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-canvas);
+}
+
+body {
+  margin: 0;
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--color-copper);
+  outline-offset: 3px;
+}
+
+.phone-nav-link {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.phone-nav-link:hover,
+.phone-nav-link:focus-visible {
+  color: var(--color-forest);
+}
+
+html[data-connectivity="offline"] form button[type="submit"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-copper) 25%, transparent);
+}

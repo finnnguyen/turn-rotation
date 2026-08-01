@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Turn Rotation">
+  <rect width="512" height="512" rx="112" fill="#163c35"/>
+  <path d="M154 181c31-43 84-67 140-56 42 8 77 34 98 69" fill="none" stroke="#f5f1e8" stroke-width="42" stroke-linecap="round"/>
+  <path d="m389 130 9 70-70 9" fill="none" stroke="#a95f38" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M358 331c-31 43-84 67-140 56-42-8-77-34-98-69" fill="none" stroke="#f5f1e8" stroke-width="42" stroke-linecap="round"/>
+  <path d="m123 382-9-70 70-9" fill="none" stroke="#a95f38" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

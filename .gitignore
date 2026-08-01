@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next
+/out
+
+# testing
+/coverage
+/playwright-report
+/test-results
+
+# local environment
+.env
+.env.*
+!.env.example
+
+# supabase local state
+/.supabase
+/supabase/.branches
+/supabase/.temp
+/supabase/snippets
+
+# operating system and editors
+.DS_Store
+*.swp
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# typescript
+*.tsbuildinfo
