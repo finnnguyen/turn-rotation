@@ -1,5 +1,17 @@
 # Deployment and operations runbook
 
+## Current production environment
+
+- Amplify URL: <https://main.d1fp0wl4mlqx0q.amplifyapp.com>
+- Amplify region: `us-west-2`
+- Supabase project reference: `fwlnubnlbmldanqyakdy`
+- Deployment branch: `main`
+- Cost monitoring: account-wide zero-spend AWS budget alert
+
+The initial production release and smoke test completed successfully. Keep
+credentials, access keys, and service-role secrets out of this document and the
+repository.
+
 ## Release order
 
 1. Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm run test`, and

@@ -211,7 +211,20 @@ Milestone 2.
 - M5 — Operational fairness: complete
 - M6 — Transparency and daily history: complete
 - M7 — AWS Textract-assisted service import: complete
-- M8 — Production readiness and portfolio delivery: in progress
+- M8 — Production readiness and portfolio delivery: complete
+
+### Production deployment
+
+- Application: <https://main.d1fp0wl4mlqx0q.amplifyapp.com>
+- Hosting: AWS Amplify, connected to the GitHub `main` branch
+- Backend: hosted Supabase PostgreSQL, Auth, Realtime, Storage, and Edge Functions
+- AWS feature: Amazon Textract service-menu extraction with manager review
+- Cost safeguard: account-wide AWS zero-spend budget notification
+
+The production smoke test covered manager authentication, seeded catalog data,
+workday and rotation operations, and the complete private menu-upload flow.
+Textract detected 51 lines from the sample price list and created 41 editable
+drafts; no extracted service was published without manager confirmation.
 
 ### Installable app and offline policy
 

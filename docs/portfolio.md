@@ -40,4 +40,21 @@ accessibility, and browser testing.
    confirm it without duplicating an existing service.
 7. Disconnect the network to show read-only aggregate status and blocked writes.
 
-Add final screenshots and the demonstration-video URL here after deployment.
+## Live project
+
+- Production application: <https://main.d1fp0wl4mlqx0q.amplifyapp.com>
+- Source repository: <https://github.com/finnnguyen/turn-rotation>
+- Production stack: AWS Amplify, Supabase, and Amazon Textract
+
+## Verified production evidence
+
+- AWS Amplify successfully built and deployed the GitHub `main` branch.
+- Hosted Supabase migrations and seed data initialized the salon rules, staff,
+  service catalog, authorization policies, and transactional rotation engine.
+- A production manager account authenticated and exercised the workday and
+  rotation workflows.
+- Amazon Textract detected 51 lines in the sample salon price list and created
+  41 manager-review drafts without automatically publishing catalog changes.
+- An account-wide AWS zero-spend budget alert provides an early cost warning.
+
+Add the final demonstration-video URL here when the recording is available.
