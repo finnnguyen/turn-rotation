@@ -1,43 +1,87 @@
 # Turn Rotation
 
-Turn Rotation is a transparent, auditable employee rotation system for a nail
-and hair salon. It is designed around actual arrival order, employee
-qualifications, availability, service value, a shared haircut rotation, and
-plain-language assignment explanations.
+[![CI](https://github.com/finnnguyen/turn-rotation/actions/workflows/ci.yml/badge.svg)](https://github.com/finnnguyen/turn-rotation/actions/workflows/ci.yml)
 
-## Users and problem
+**Live:** [main.d1fp0wl4mlqx0q.amplifyapp.com](https://main.d1fp0wl4mlqx0q.amplifyapp.com)
 
-Salon managers need to assign walk-ins quickly without losing arrival order,
-specialty restrictions, partial-credit progress, appointments, breaks, or
-customer requests. Employees need to understand why they received—or did not
-receive—a customer. Turn Rotation gives managers an operational dashboard while
-giving every decision a reconstructable rule and audit trail.
+A transparent, auditable employee rotation system for a nail and hair salon —
+managers open the day, clock staff in by arrival order, and intake walk-ins;
+the app recommends who's next and why, tracks a shared dollar rotation and an
+independent haircut rotation, and keeps a full audit trail so every decision
+is reconstructable.
 
-- Managers open/close workdays, clock staff in, intake customers, confirm
-  assignments, manage busy mode, correct mistakes, review history, and maintain
-  the service catalog.
-- Staff see their position and status, manage approved breaks, complete assigned
-  work, and view their own history within RLS boundaries.
+Built on Next.js (App Router, Server Actions) and Supabase (Postgres, Row
+Level Security, Auth, Realtime), deployed on AWS Amplify with Amazon Textract
+for manager-reviewed service-menu import. Error tracking via Sentry.
+
+## Engineering Highlights
+
+The parts of this project built the way a real production system needs to
+work, not just the way that ships fastest:
+
+- **Fairness rules enforced in the database, not the app.** Rotation
+  advancement, dollar/haircut balances, and position changes all happen
+  inside atomic Postgres functions (`lock_and_increment_rotation`,
+  `start_visit_services`) — a race between two managers on different devices
+  cannot produce an inconsistent queue, regardless of what the request-handling
+  code does.
+- **Optimistic concurrency with real conflict detection.** Every
+  state-changing RPC takes an `expected_state_version` and rejects stale
+  writes instead of silently overwriting them, so two people confirming
+  assignments at the same moment can't corrupt shared state.
+- **Concurrency safety enforced with partial unique indexes**, not
+  application checks — `assignment_reservations_one_active_per_employee` and
+  `workdays_one_active_per_location` make double-booking an employee or
+  opening two concurrent workdays a constraint violation, not a bug to catch
+  in code review.
+- **Idempotency keys on every command.** Assignment confirmation and service
+  completion accept a client-supplied idempotency key, so a retried request
+  after a dropped connection replays the same result instead of double-applying.
+- **Row Level Security as the actual authorization model.** Manager and staff
+  access rules live in Postgres policies (`private.is_manager_at`,
+  `private.current_user_role`), not scattered `if` checks in route handlers
+  that are easy to miss on the next endpoint.
+- **Real behavioral tests, not shallow assertions.** `tests/integration/`
+  exercises the actual RPC path against a local Postgres instance to verify
+  dollar/master and haircut rotation fairness end-to-end — confirmed by
+  mutation testing (deliberately breaking the logic and checking the test
+  fails) rather than just checking that migrations apply.
+- **CI runs the integration suite against real Postgres**, not mocks — one
+  job spins up the local Supabase stack in Docker, applies migrations,
+  lints the schema, and runs the behavioral tests before anything merges.
+- **Error tracking wired through the real request lifecycle.** Sentry
+  captures server, edge, and client errors via Next.js instrumentation hooks,
+  with source maps uploaded on every build so production stack traces
+  resolve to real source, not minified output.
+- **AI-assisted import with a mandatory human gate.** Amazon Textract
+  extracts services from an uploaded price list, but nothing is published to
+  the catalog without manager review and confirmation.
+- **Privacy-aware offline mode.** The service-worker cache never stores
+  authenticated dashboard HTML or customer/employee names — the offline
+  fallback shows only last-synced aggregate counts and blocks writes that
+  could conflict with newer server state.
+- **Accessibility checked in CI, not just by hand.** Playwright + axe-core
+  scan public routes on every push, alongside lint, typecheck, unit tests,
+  and a full production build gate on `main`.
 
 ## Fairness rules represented
 
 - Daily arrival order initializes one master rotation.
-- Qualified haircut staff also share one haircut rotation; every haircut advances
-  that rotation to prevent the same person taking consecutive haircut walk-ins.
-- Dollar services combine across categories until exactly $30 or more completes a
-  turn; smaller services preserve the employee's master position.
-- Men's haircuts contribute one-third and women's haircuts one-half to haircut
-  credit, while the haircut queue still advances after each haircut.
-- Qualifications, availability, the 15-minute wait rule, requests, appointments,
-  refusals, busy-only specialties, and manager overrides remain explicit and
-  auditable.
+- Qualified haircut staff also share one haircut rotation; every haircut
+  advances that rotation to prevent the same person taking consecutive
+  haircut walk-ins.
+- Dollar services combine across categories until exactly $30 or more
+  completes a turn; smaller services preserve the employee's master position.
+- Men's haircuts contribute one-third and women's haircuts one-half to
+  haircut credit, while the haircut queue still advances after each haircut.
+- Qualifications, availability, the 15-minute wait rule, requests,
+  appointments, refusals, busy-only specialties, and manager overrides
+  remain explicit and auditable.
 - Daily partial credits reset rather than carrying into the next workday.
 
-The product and implementation plan is documented in
-[`IMPLEMENTATION_BACKLOG.md`](./IMPLEMENTATION_BACKLOG.md).
+## Documentation
 
-## Architecture and portfolio
-
+- [Implementation backlog and milestone plan](./IMPLEMENTATION_BACKLOG.md)
 - [System architecture and entity relationships](./docs/architecture.md)
 - [Deployment, backup, recovery, and rollback runbook](./docs/deployment.md)
 - [Portfolio summary, CV bullets, and demonstration script](./docs/portfolio.md)
@@ -46,32 +90,6 @@ The product and implementation plan is documented in
   [Supabase backend](./docs/decisions/0002-supabase-backend.md),
   [AWS Amplify Hosting](./docs/decisions/0003-amplify-hosting.md), and
   [manager-reviewed Textract](./docs/decisions/0004-textract-reviewed-import.md)
-
-## Implemented milestones
-
-### Milestone 0 — Project foundation
-
-- Next.js App Router with strict TypeScript
-- Tailwind CSS
-- Vitest and Testing Library
-- Playwright browser-test configuration
-- Supabase local-project configuration
-- Safe public-environment validation
-- GitHub Actions quality checks
-- AWS Amplify-compatible production build
-
-### Milestone 1 — Identity and catalog
-
-- Cookie-based Supabase SSR authentication
-- Verified claims for protected server-rendered routes
-- Manager and staff roles enforced through PostgreSQL RLS
-- Location-scoped employee profiles
-- Effective-dated qualifications
-- Service categories and calculation types
-- Non-overlapping historical price versions
-- Manager interfaces for employees, qualifications, services, and prices
-- Seeded salon, employee, specialty, service, and rule data
-- Database migration/reset/lint checks in CI
 
 ## Local setup
 
@@ -107,8 +125,8 @@ supabase start
 supabase db reset
 ```
 
-Local Supabase reports its API URL and publishable key after startup. Copy those
-values into `.env.local`.
+Local Supabase reports its API URL and publishable key after startup. Copy
+those values into `.env.local`.
 
 Run quality checks:
 
@@ -192,39 +210,10 @@ on conflict do nothing;
 ```
 
 This bootstrap is intentionally an administrative setup step. After the first
-manager exists, normal catalog changes are protected by manager-checked RLS and
-database functions.
+manager exists, normal catalog changes are protected by manager-checked RLS
+and database functions.
 
-## Migration layout
-
-- `20260730000100_foundation.sql` — schemas, extensions, enums
-- `20260730000200_identity_and_employees.sql` — locations, profiles, roles, RLS
-- `20260730000300_service_catalog.sql` — categories, services, price history
-- `20260730000400_qualifications_and_rules.sql` — specialties and approved rules
-
-Run `supabase db reset` against a local project after every migration change.
-The command recreates the local database, applies migrations in order, and then
-loads the seed.
-
-## Current status
-
-Milestones 0 and 1 establish the application, identity, authorization, employee
-specialty, service-catalog, and historical-pricing foundations. Workday opening,
-clock-in order, employee status, and live master/haircut rotations begin in
-Milestone 2.
-## Milestone status
-
-- M0 — Project foundation: complete
-- M1 — Identity and catalog: complete
-- M2 — Workday and rotations: complete
-- M3 — Customer intake and assignment engine: complete
-- M4 — Turn accounting: complete
-- M5 — Operational fairness: complete
-- M6 — Transparency and daily history: complete
-- M7 — AWS Textract-assisted service import: complete
-- M8 — Production readiness and portfolio delivery: complete
-
-### Production deployment
+## Production deployment
 
 - Application: <https://main.d1fp0wl4mlqx0q.amplifyapp.com>
 - Hosting: AWS Amplify, connected to the GitHub `main` branch
@@ -232,70 +221,17 @@ Milestone 2.
 - AWS feature: Amazon Textract service-menu extraction with manager review
 - Cost safeguard: account-wide AWS zero-spend budget notification
 
-The production smoke test covered manager authentication, seeded catalog data,
-workday and rotation operations, and the complete private menu-upload flow.
-Textract detected 51 lines from the sample price list and created 41 editable
-drafts; no extracted service was published without manager confirmation.
+The production smoke test covered manager authentication, seeded catalog
+data, workday and rotation operations, and the complete private menu-upload
+flow. Textract detected 51 lines from the sample price list and created 41
+editable drafts; no extracted service was published without manager
+confirmation.
 
-### Installable app and offline policy
+## Status
 
-Milestone 8 adds a web-app manifest, maskable icon, phone navigation, visible
-keyboard focus, reduced-motion support, and a service-worker-backed offline
-fallback. The browser registers the service worker automatically when the app
-loads.
-
-For privacy, authenticated dashboard HTML and salon records are **not** written
-to the browser cache. The offline page displays only last-synchronized aggregate
-counts (queue sizes, waiting count, and available/serving totals), never customer
-or employee names. It clearly reports the connection state and blocks form
-submissions that could conflict with newer server state.
-
-Playwright and axe-core scan public routes for automatically detectable
-accessibility violations in CI. These checks complement keyboard and responsive
-manual testing; they do not replace it.
-
-Milestone 2 adds manager-controlled workday opening and closing, arrival-order
-clock-in, employee availability and approved breaks, one master rotation, one
-shared haircut rotation, append-only event history, optimistic state versions,
-and Supabase Realtime dashboard refresh.
-
-### Workday workflow
-
-1. A manager opens the day. The active rule-set version is frozen onto that
-   workday.
-2. The manager clocks employees in using their actual arrival order. Every
-   employee joins the end of the master rotation; qualified haircut staff also
-   join the end of the shared haircut rotation.
-3. Serving, available, and approved-break changes keep both queue positions.
-4. Clocking out removes the employee from active positions. Returning on the
-   same day places them at the end while retaining same-day partial balances.
-5. Closing the day clears active positions and daily partial balances. Each
-   change is retained in append-only clock, status, break, and rotation events.
-
-All state-changing dashboard actions call database functions that authorize the
-actor and update the projection, event history, and state version in one
-transaction. Staff accounts can only change the employee linked to their own
-profile; managers can operate the full team.
-
-Milestone 3 adds anonymous or named customer tickets, walk-in and appointment
-visit types, multi-service intake, deterministic master/haircut recommendations,
-qualification and availability snapshots, the approved 15-minute wait rule,
-candidate skip explanations, manager overrides, state-version checks, and
-idempotent assignment confirmation.
-
-Milestone 4 adds an explicit service lifecycle, historical listed-price capture,
-separate dollar and haircut ledgers, $30 full-turn completion, men’s 1/3 and
-women’s 1/2 haircut credit, haircut advancement after every haircut, master
-advancement after a completed turn, idempotent completion, reservation release,
-and auditable end-of-day partial-credit expiration.
-
-Milestone 5 adds manager-controlled busy mode, busy-only qualification
-eligibility, refusal penalties, approved no-penalty inability, customer-decline
-conversion to requested visits, unstarted service-line transfers, compensating
-balance corrections, and an immutable manager audit history.
-
-Milestone 6 adds rebuildable daily location and employee summaries, separate
-walk-in/requested/appointment statistics, listed service value, turns, partials,
-haircuts, skips, refusals, corrections, overrides, status-time totals, and a
-chronological event feed. Detailed staff history is restricted to the employee
-linked to the signed-in account through database RLS.
+All planned milestones (M0–M8) are complete: project foundation; identity and
+catalog; workdays and rotations; customer intake and the assignment engine;
+turn accounting; operational fairness (busy mode, refusals, corrections);
+transparency and daily history; AWS Textract-assisted service import; and
+production readiness. See [`IMPLEMENTATION_BACKLOG.md`](./IMPLEMENTATION_BACKLOG.md)
+for the full milestone-by-milestone breakdown.
