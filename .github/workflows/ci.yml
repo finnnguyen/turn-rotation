@@ -9,20 +9,32 @@ permissions:
   contents: read
 
 jobs:
-  database:
+  database-and-integration:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
 
+      - run: npm ci
       - run: supabase start
       - run: supabase db reset
       - run: supabase db lint --level error
+      # The behavioral tests for the actual fairness/rotation logic — the
+      # "quality" job's `npm run test` never touches Postgres, and `supabase
+      # db reset` above only proves the migrations apply, not that the
+      # business rules give correct results. Needs Supabase running, which
+      # only this job has.
+      - run: npm run test:integration
 
   quality:
     runs-on: ubuntu-latest

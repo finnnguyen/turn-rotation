@@ -116,6 +116,17 @@ Run quality checks:
 npm run check
 ```
 
+Run the behavioral integration tests for the rotation/assignment engine
+(requires `supabase start` — see above). These call the real RPC functions
+against local Postgres as an authenticated manager, the same way the app
+does — the fairness rules live entirely in `supabase/migrations/`, and
+nothing else in this repo exercises that logic end-to-end. `npm run check`
+does not run these, since it's meant to work without Supabase running:
+
+```bash
+npm run test:integration
+```
+
 Run browser tests after installing Playwright Chromium:
 
 ```bash

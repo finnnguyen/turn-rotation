@@ -16,6 +16,12 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
+    // Integration tests need a live local Supabase stack (`supabase start`)
+    // and run separately via `npm run test:integration` /
+    // vitest.integration.config.ts — excluded here so the default `npm run
+    // test` (what CI's quality job runs, without Supabase running) doesn't
+    // fail trying to reach a database that isn't there.
+    exclude: ["node_modules/**", "tests/integration/**"],
     coverage: {
       reporter: ["text", "html"],
     },
