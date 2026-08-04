@@ -340,3 +340,37 @@ describe("mixed haircut + dollar visit fairness", () => {
     await closeWorkday(workdayId);
   });
 });
+
+describe("closing a workday with an unresolved visit", () => {
+  it("releases the employee's reservation so they aren't skipped on a future day", async () => {
+    const day1 = await openWorkday("2026-02-05");
+    await clockIn(day1, TIM);
+    await clockIn(day1, LIZ);
+
+    // Confirm and start a visit for Tim, but never complete it — this is
+    // exactly the kind of unresolved visit that can happen if the day ends
+    // before service wraps up.
+    const visit = await createVisitAndRecommend(day1, [MANICURE]);
+    expect(visit.recommended_employee_id).toBe(TIM);
+    await confirmAssignment(visit.decision_id, TIM, visit.expected_state_version);
+    await startVisitServices(visit.visit_id, visit.expected_state_version);
+    // Deliberately no completeVisitServices call — the reservation stays
+    // active, same as if the day just ended mid-service.
+
+    await closeWorkday(day1);
+
+    // A brand new day — Tim should be a normal candidate again, not
+    // silently skipped as "still with a customer" from a visit that closed
+    // out a day ago. Before the fix, assignment_reservations was never
+    // released on close (it's scoped by location+employee, not workday),
+    // so Tim would be skipped here indefinitely.
+    const day2 = await openWorkday("2026-02-06");
+    await clockIn(day2, TIM);
+    await clockIn(day2, LIZ);
+
+    const next = await createVisitAndRecommend(day2, [MANICURE]);
+    expect(next.recommended_employee_id).toBe(TIM);
+
+    await closeWorkday(day2);
+  });
+});
