@@ -306,3 +306,37 @@ describe("haircut rotation independence", () => {
     await closeWorkday(workdayId);
   });
 });
+
+describe("mixed haircut + dollar visit fairness", () => {
+  it("respects the haircut queue for a visit that mixes a haircut with a dollar service", async () => {
+    const workdayId = await openWorkday("2026-02-04");
+    await clockIn(workdayId, SHEILA);
+    await clockIn(workdayId, FINN);
+
+    // Give Sheila a pure haircut first — this advances the haircut queue so
+    // Finn is now next in line for haircuts, while Sheila stays ahead in the
+    // master (dollar) queue, since 1/3 credit doesn't complete a turn.
+    const first = await createVisitAndRecommend(workdayId, [MENS_HAIRCUT]);
+    expect(first.recommended_employee_id).toBe(SHEILA);
+    await confirmAssignment(first.decision_id, SHEILA, first.expected_state_version);
+    const started = await startVisitServices(first.visit_id, first.expected_state_version);
+    await completeVisitServices(first.visit_id, started.state_version);
+
+    const entries = await rotationState(workdayId);
+    const sheila = entries.find((e) => e.employee_id === SHEILA)!;
+    const finn = entries.find((e) => e.employee_id === FINN)!;
+    expect(sheila.master_position).toBeLessThan(finn.master_position); // Sheila still ahead in master
+    expect(finn.haircut_position).toBeLessThan(sheila.haircut_position); // Finn now ahead in haircut
+
+    // A visit that mixes a haircut with a nail service must still respect
+    // the haircut queue — Finn is next for haircuts, so Finn should be
+    // recommended, not Sheila (who's only ahead in the unrelated master
+    // queue). Before the fix, a mixed visit fell through to master-queue
+    // ordering because not every selected service was a haircut, which
+    // would have recommended Sheila here instead.
+    const mixed = await createVisitAndRecommend(workdayId, [MENS_HAIRCUT, MANICURE]);
+    expect(mixed.recommended_employee_id).toBe(FINN);
+
+    await closeWorkday(workdayId);
+  });
+});
