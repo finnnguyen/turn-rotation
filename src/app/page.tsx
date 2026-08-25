@@ -1,8 +1,8 @@
 const foundationChecks = [
-  "Next.js App Router with strict TypeScript",
-  "Supabase-ready environment validation",
-  "Unit and browser test foundations",
-  "AWS Amplify deployment-ready build",
+  "Rotation fairness enforced inside atomic Postgres functions, not app-level checks a race condition could slip past",
+  "Row Level Security is the real authorization model, not scattered route-handler checks",
+  "AWS Textract-assisted menu import, nothing publishes without manager review",
+  "Automated unit, real-Postgres integration, and Playwright/axe-core tests run in CI on every push",
 ];
 
 export default function Home() {
@@ -30,7 +30,7 @@ export default function Home() {
             </div>
           </div>
           <span className="rounded-full border border-forest/15 bg-white/70 px-3 py-1.5 text-xs font-semibold text-forest shadow-sm backdrop-blur">
-            Milestone 0
+            Live in production
           </span>
         </header>
 
@@ -55,7 +55,7 @@ export default function Home() {
                 Open salon workspace
               </Link>
               <span className="rounded-full border border-ink/10 bg-white/75 px-4 py-2 text-sm font-medium text-ink shadow-sm">
-                Identity and catalog foundation
+                Manager accounts only
               </span>
             </div>
           </div>
@@ -64,10 +64,10 @@ export default function Home() {
             <div className="flex items-start justify-between gap-6">
               <div>
                 <p className="text-sm font-semibold text-copper">
-                  PROJECT FOUNDATION
+                  ENGINEERING HIGHLIGHTS
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">
-                  Milestone 0 checklist
+                  Built the way production needs to work
                 </h2>
               </div>
               <span className="mt-1 size-3 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.12)]" />
@@ -93,7 +93,7 @@ export default function Home() {
 
         <footer className="flex flex-col gap-2 border-t border-ink/10 py-5 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <span>One source of truth. No silent changes.</span>
-          <span>Next: identity, catalog, and historical pricing</span>
+          <span>All milestones (M0-M8) complete - see README for the full breakdown</span>
         </footer>
       </div>
     </main>
