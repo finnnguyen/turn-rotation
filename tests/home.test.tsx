@@ -12,6 +12,6 @@ describe("Home", () => {
         name: "Every turn should have a reason.",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Milestone 0 checklist")).toBeInTheDocument();
+    expect(screen.getByText("Built the way production needs to work")).toBeInTheDocument();
   });
 });
