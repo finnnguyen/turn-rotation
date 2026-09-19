@@ -1,0 +1,27 @@
+name: Keep Supabase Awake
+
+# Free-tier Supabase projects auto-pause after ~7 days with no API
+# activity, which breaks any page that queries the database while
+# static pages keep working. This pings the project's public REST
+# endpoint every 3 days to keep it active.
+#
+# The apikey below is the project's anon/publishable key, which is
+# safe to expose publicly — it's the same key already shipped in this
+# app's client-side bundle, and Row Level Security governs what it
+# can actually access.
+
+on:
+  schedule:
+    - cron: "23 15 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          status=$(curl -sf -o /dev/null -w "%{http_code}" \
+            "https://fwlnubnlbmldanqyakdy.supabase.co/rest/v1/" \
+            -H "apikey: sb_publishable_aIrsJmmDm_Lh0FVcO3iV1Q_5p7cKPCt")
+          echo "Supabase responded with HTTP $status"
